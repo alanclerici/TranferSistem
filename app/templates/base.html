@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ title }}</title>
+  <link rel="stylesheet" href="{{ url_for('static', path='style.css') }}">
+</head>
+<body>
+  <div class="crt-overlay" aria-hidden="true"></div>
+  <main class="terminal-shell">
+    <header class="terminal-header">
+      <div>
+        <h1>{{ title }}<span class="cursor">_</span></h1>
+      </div>
+      <a class="button" href="{{ url_for('index') }}">[REFRESH]</a>
+    </header>
+
+    {% if message %}
+      <div class="notice notice-ok">[OK] {{ message }}</div>
+    {% endif %}
+
+    {% if error %}
+      <div class="notice notice-error">[ERROR] {{ error }}</div>
+    {% endif %}
+
+    {% block content %}{% endblock %}
+
+    <footer class="status-bar">
+      <span>LAN NODE ACTIVE</span>
+      <span>MAX UPLOAD {{ max_upload_size_mb }} MB</span>
+      <span>DELETE {{ "ENABLED" if delete_enabled else "DISABLED" }}</span>
+    </footer>
+  </main>
+</body>
+</html>

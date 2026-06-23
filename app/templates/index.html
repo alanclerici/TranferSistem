@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <section class="panel controls-panel">
+    <form class="inline-form" action="{{ upload_url(current_path) }}" method="post" enctype="multipart/form-data">
+      <label class="file-picker">
+        <span>[SELECT FILE]</span>
+        <input type="file" name="file" required>
+      </label>
+      <button type="submit">[UPLOAD]</button>
+    </form>
+
+  </section>
+
+  <section class="panel">
+    <div class="table-wrap">
+      <table class="file-table">
+        <thead>
+          <tr>
+            <th>TYPE</th>
+            <th>NAME</th>
+            <th>SIZE</th>
+            <th>MODIFIED</th>
+            <th>ACTION</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% if parent_path is not none %}
+            <tr>
+              <td>[DIR]</td>
+              <td><a href="{{ browse_url(parent_path) }}">..</a></td>
+              <td>--</td>
+              <td>--</td>
+              <td><a class="button" href="{{ browse_url(parent_path) }}">[PARENT]</a></td>
+            </tr>
+          {% endif %}
+
+          {% for entry in entries %}
+            <tr>
+              <td>{{ "[DIR]" if entry.is_dir else "[FILE]" }}</td>
+              <td>
+                {% if entry.is_dir %}
+                  <a href="{{ browse_url(entry.rel_path) }}">{{ entry.name }}</a>
+                {% else %}
+                  <span>{{ entry.name }}</span>
+                {% endif %}
+              </td>
+              <td>{{ entry.size }}</td>
+              <td>{{ entry.modified }}</td>
+              <td class="actions">
+                {% if entry.is_dir %}
+                  <a class="button" href="{{ browse_url(entry.rel_path) }}">[OPEN]</a>
+                {% else %}
+                  <a class="button" href="{{ download_url(entry.rel_path) }}">[DOWNLOAD]</a>
+                {% endif %}
+
+                {% if delete_enabled and not entry.is_dir %}
+                  <form class="delete-form" action="{{ delete_url(entry.rel_path) }}" method="post" onsubmit="return confirm('Borrar {{ entry.name }}? Esta accion no se puede deshacer.');">
+                    <button class="danger" type="submit">[DELETE]</button>
+                  </form>
+                {% elif entry.is_dir %}
+                  <span class="disabled">[NO DELETE DIR]</span>
+                {% else %}
+                  <span class="disabled">[DELETE OFF]</span>
+                {% endif %}
+              </td>
+            </tr>
+          {% else %}
+            <tr>
+              <td colspan="5" class="empty">[EMPTY DIRECTORY]</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+{% endblock %}
