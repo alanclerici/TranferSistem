@@ -1,0 +1,17 @@
+#!/usr/bin/env sh
+set -eu
+
+PROJECT_DIR="/home/alan/dev/tranfersistem/local-crt-filedrop"
+SHARED_ROOT="${LOCAL_CRT_SHARED_ROOT:-$PROJECT_DIR/shared}"
+
+export LOCAL_CRT_SHARED_ROOT="$SHARED_ROOT"
+export LOCAL_CRT_HOST="${LOCAL_CRT_HOST:-0.0.0.0}"
+export LOCAL_CRT_PORT="${LOCAL_CRT_PORT:-8000}"
+
+mkdir -p "$SHARED_ROOT"
+cd "$PROJECT_DIR"
+
+exec "$PROJECT_DIR/venv/bin/uvicorn" app.main:app \
+  --host "$LOCAL_CRT_HOST" \
+  --port "$LOCAL_CRT_PORT" \
+  "$@"

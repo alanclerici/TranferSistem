@@ -82,7 +82,34 @@ LOCAL_CRT_PORT=8000
 
 ## Ejecutar manualmente
 
-Desde la carpeta del proyecto:
+El proyecto incluye un wrapper ejecutable en:
+
+```text
+scripts/tranfersistem
+```
+
+El formato recomendado es un shell script sin extension, con shebang. En Linux se usa como un comando normal y no hace falta escribir `.sh`.
+
+Para instalarlo en un directorio del `PATH`, por ejemplo `~/.local/bin`:
+
+```bash
+install -D -m 755 scripts/tranfersistem "$HOME/.local/bin/tranfersistem"
+```
+
+Despues se puede ejecutar desde cualquier directorio:
+
+```bash
+tranfersistem
+```
+
+El wrapper usa por defecto la carpeta `shared` dentro del proyecto y escucha en `0.0.0.0:8000`. Se puede cambiar con variables de entorno:
+
+```bash
+LOCAL_CRT_SHARED_ROOT="$HOME/CompartidoWeb" tranfersistem
+LOCAL_CRT_PORT=9000 tranfersistem
+```
+
+Tambien se puede ejecutar directamente con `uvicorn` desde la carpeta del proyecto:
 
 ```bash
 source venv/bin/activate
