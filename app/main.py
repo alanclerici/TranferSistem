@@ -1,3 +1,7 @@
+import logging
+import socket
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
 from pathlib import Path
 from urllib.parse import quote
 
@@ -22,7 +26,26 @@ from .file_ops import (
 BASE_DIR = Path(__file__).resolve().parent
 settings = get_settings()
 
-app = FastAPI(title="Local CRT FileDrop")
+
+def local_ip_address() -> str:
+    try:
+        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
+            sock.connect(("8.8.8.8", 80))
+            return sock.getsockname()[0]
+    except OSError:
+        try:
+            return socket.gethostbyname(socket.gethostname())
+        except OSError:
+            return "no disponible"
+
+
+@asynccontextmanager
+async def lifespan(_: FastAPI) -> AsyncIterator[None]:
+    logging.getLogger("uvicorn.error").info("IP de esta PC: %s", local_ip_address())
+    yield
+
+
+app = FastAPI(title="Local CRT FileDrop", lifespan=lifespan)
 app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
 templates = Jinja2Templates(directory=BASE_DIR / "templates")
 
