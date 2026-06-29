@@ -12,14 +12,14 @@ Importante: no tiene login ni autenticacion. Usar solo en redes locales confiabl
 - Directorio raiz configurable.
 - Lista archivos y carpetas existentes.
 - Permite navegar carpetas existentes, pero no crear carpetas desde la web.
-- Permite subir archivos a la carpeta actual.
+- Permite subir uno o varios archivos a la carpeta actual.
 - Evita sobrescritura accidental: si `archivo.txt` ya existe, guarda `archivo_1.txt`, `archivo_2.txt`, etc.
 - Permite descargar archivos.
 - Permite borrar archivos. El borrado esta habilitado por defecto.
 - No permite borrar carpetas desde la web.
 - Soporta nombres con espacios y caracteres habituales en espanol.
 - Bloquea path traversal con `Path.resolve()` y validacion contra el directorio raiz permitido.
-- Limite configurable de tamano maximo para uploads.
+- Limite configurable de tamano maximo por archivo subido.
 
 ## Requisitos
 

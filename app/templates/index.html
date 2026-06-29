@@ -4,8 +4,8 @@
   <section class="panel controls-panel">
     <form class="inline-form" action="{{ upload_url(current_path) }}" method="post" enctype="multipart/form-data">
       <label class="file-picker">
-        <span>[SELECT FILE]</span>
-        <input type="file" name="file" required>
+        <span>[SELECT FILES]</span>
+        <input type="file" name="file" multiple required>
       </label>
       <button type="submit">[UPLOAD]</button>
     </form>

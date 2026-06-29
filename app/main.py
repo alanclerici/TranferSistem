@@ -3,6 +3,7 @@ import socket
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from pathlib import Path
+from typing import Annotated
 from urllib.parse import quote
 
 import uvicorn
@@ -66,6 +67,23 @@ def action_url(prefix: str, raw_path: str = "") -> str:
     return f"/{prefix}" if not clean_path else f"/{prefix}/{quote(clean_path, safe='/')}"
 
 
+async def save_uploaded_file(directory: Path, file: UploadFile) -> str:
+    filename = Path(file.filename or "").name
+    destination = unique_destination(directory, filename)
+    bytes_written = 0
+
+    with destination.open("wb") as output:
+        while chunk := await file.read(1024 * 1024):
+            bytes_written += len(chunk)
+            if bytes_written > settings.max_upload_size_bytes:
+                output.close()
+                destination.unlink(missing_ok=True)
+                raise FileDropError(f"El archivo {filename} supera el límite de {settings.max_upload_size_mb} MB.")
+            output.write(chunk)
+
+    return destination.name
+
+
 def render_index(request: Request, raw_path: str = ""):
     try:
         entries = list_directory(settings.shared_root, raw_path)
@@ -123,30 +141,28 @@ async def download(path: str):
 
 @app.post("/upload")
 @app.post("/upload/{path:path}")
-async def upload(file: UploadFile = File(...), path: str = ""):
+async def upload(files: Annotated[list[UploadFile], File(..., alias="file")], path: str = ""):
     try:
         directory = resolve_safe_path(settings.shared_root, path)
         if not directory.is_dir():
             raise FileDropError("La ruta actual no es una carpeta.")
+        if not files:
+            raise FileDropError("No se seleccionaron archivos.")
 
-        destination = unique_destination(directory, file.filename or "")
-        bytes_written = 0
+        saved_names: list[str] = []
+        for file in files:
+            saved_names.append(await save_uploaded_file(directory, file))
 
-        with destination.open("wb") as output:
-            while chunk := await file.read(1024 * 1024):
-                bytes_written += len(chunk)
-                if bytes_written > settings.max_upload_size_bytes:
-                    output.close()
-                    destination.unlink(missing_ok=True)
-                    raise FileDropError(f"El archivo supera el límite de {settings.max_upload_size_mb} MB.")
-                output.write(chunk)
-
-        message = f"Archivo subido como {destination.name}."
+        if len(saved_names) == 1:
+            message = f"Archivo subido como {saved_names[0]}."
+        else:
+            message = f"{len(saved_names)} archivos subidos."
         return RedirectResponse(browse_url(path, message=message), status_code=status.HTTP_303_SEE_OTHER)
     except FileDropError as exc:
         return RedirectResponse(browse_url(path, error=str(exc)), status_code=status.HTTP_303_SEE_OTHER)
     finally:
-        await file.close()
+        for file in files:
+            await file.close()
 
 
 @app.post("/delete/{path:path}")
